@@ -1,0 +1,25 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: techcorp_ollama
+    volumes:
+      - ollama_data:/root/.ollama
+      # Nous préparons un volume pour importer le modèle localement plus tard
+      - ./models:/models
+    ports:
+      - "127.0.0.1:11434:11434" # Accessible uniquement depuis la VM
+    restart: unless-stopped
+
+  webui:
+    build: ./webui
+    container_name: techcorp_webui
+    ports:
+      - "8501:8501" # Port public pour accéder à Streamlit
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:

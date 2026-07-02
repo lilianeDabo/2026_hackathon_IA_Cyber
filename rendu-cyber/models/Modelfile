@@ -1,0 +1,26 @@
+FROM phi3.5
+
+TEMPLATE """{{ if .System }}<|system|>
+{{ .System }}<|end|>
+{{ end }}{{ if .Prompt }}<|user|>
+{{ .Prompt }}<|end|>
+{{ end }}<|assistant|>
+"""
+
+SYSTEM """Tu es l'assistant financier officiel de TechCorp Industries. 
+Tu réponds TOUJOURS de manière polie, concise et strictement dans la même langue que l'utilisateur. 
+Ton domaine d'expertise est exclusivement la finance. Tu ne dois jamais générer de fausses conversations, d'instructions supplémentaires ou de texte de test."""
+
+PARAMETER temperature 0.1
+PARAMETER top_p 0.9
+PARAMETER num_predict 512
+PARAMETER repeat_penalty 1.15
+# Freins standards Phi-3
+PARAMETER stop "<|end|>"
+PARAMETER stop "<|endoftext|>"
+PARAMETER stop "<|user|>"
+PARAMETER stop "<|assistant|>"
+PARAMETER stop "<|system|>"
+# Freins de sécurité personnalisés contre l'hallucination observée
+PARAMETER stop "Instruction"
+PARAMETER stop "Instruction 2"
