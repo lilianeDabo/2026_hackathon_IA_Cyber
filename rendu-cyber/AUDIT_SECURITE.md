@@ -1,7 +1,7 @@
 # 🔒 RAPPORT D'AUDIT : Sécurité, Red Teaming & Qualité des Données
 
 **Date :** 2 juillet 2026  
-**Auditeurs :** Pôle CYBER & DATA  
+**Auditeurs :** DABO Liliane LHUILLERY Duncan TCHOKOTE HAPPY Joel 
 **Périmètre :** Actifs hérités de l'équipe précédente, Modèle Finance (Prod), Modèle Médical (R&D)
 
 ---
@@ -15,7 +15,7 @@ Lors de l'inspection du dossier `datasets/`, nous avons constaté que les fichie
 
 ---
 
-## 2. AUDIT DE SÉCURITÉ : IA FINANCIÈRE (PRODUCTION)
+## 2. AUDIT DE SÉCURITÉ : IA FINANCIÈRE 
 
 L'audit de la version bêta du modèle a mis en lumière deux vulnérabilités majeures, toutes deux corrigées par le durcissement du `Modelfile`.
 
@@ -27,9 +27,15 @@ L'audit de la version bêta du modèle a mis en lumière deux vulnérabilités m
 *   **Incident :** L'IA générait de faux dialogues d'utilisateurs (ex: "Instruction 2 : Analyze how recent changes within international trade...") et y répondait en boucle. Cela provoquait une consommation de 100% du CPU.
 *   **Correctif (Patch) :** Injection de "Stop Tokens" personnalisés (`PARAMETER stop "Instruction"`, `<|user|>`, etc.) forçant l'interruption immédiate de l'inférence dès la détection d'une hallucination contextuelle.
 
+### 2.3. Vulnérabilité N°3 : Effondrement du Contexte (Language Drift & Hallucination)
+*   **Incident :** Lors d'un test sollicitant la mémoire de l'IA sur une conversation longue ("Suite à ma première question sur les ETF..."), le modèle a commencé sa réponse en français avant de subir une dérive totale, générant plusieurs paragraphes en portugais concernant le patrimoine culturel de la ville de São Paulo.
+*   **Cause Technique (Root Cause) :** Surcharge de la fenêtre de contexte (Attention Collapse). L'envoi de l'historique complet des requêtes précédentes par le frontend a saturé la capacité d'attention du petit modèle `Phi-3.5` (bridé par le CPU). Le modèle a perdu son alignement, piochant un token aléatoire ("São Paulo") et s'enfermant dans une boucle de prédiction linguistique hors-sujet.
+*   **Recommandation (Patch) :** Le modèle est inapte à soutenir de longues conversations en l'état. Il est impératif d'implémenter une fonction de purge dans l'interface Streamlit (ne conserver en mémoire que les 2 ou 3 derniers échanges maximum) et de limiter la taille du contexte (`num_ctx`) directement dans la configuration d'Ollama.
+
+
 ---
 
-## 3. AUDIT DE SÉCURITÉ : IA MÉDICALE (RED TEAMING)
+## 3. AUDIT DE SÉCURITÉ : IA MÉDICALE
 
 Afin d'évaluer la viabilité du modèle expérimental R&D `TinyLlama` + adaptateur médical LoRA, une session de Red Teaming a été menée via le script `test_cyber_medical.py`. Les résultats démontrent l'immaturité du modèle et l'interdiction de tout déploiement en l'état.
 
